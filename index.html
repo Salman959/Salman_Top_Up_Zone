@@ -1,0 +1,1586 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SALMAN Top Up Zone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      body { 
+        font-family: 'Inter', sans-serif; 
+        background-color: #ffffff;
+        color: #1a202c;
+      }
+      .gradient-bg { background: linear-gradient(135deg,#f7fafc 0%,#edf2f7 100%); }
+      .glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,0.8); }
+      .nav-link { transition: all 0.3s ease; }
+      .nav-link.active { color: #3182ce; border-bottom: 2px solid #3182ce; }
+      .copy-btn { 
+        transition: all 0.3s ease; 
+        cursor: pointer;
+      }
+      .copy-btn:hover {
+        transform: scale(1.05);
+        background: rgba(59, 130, 246, 0.1);
+      }
+      .copy-btn.copied {
+        background: #10b981;
+        color: white;
+      }
+
+      /* Live Orders specific small styles */
+      .live-order-item { background: rgba(255,255,255,0.9); border:1px solid rgba(226, 232, 240, 1); padding:12px; border-radius:10px; }
+
+      /* Category button styles with images - NAME HIDDEN */
+      .category-btn {
+        backdrop-filter: blur(10px);
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(226, 232, 240, 1);
+        min-height: 100px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        padding: 0;
+        position: relative;
+      }
+
+      .category-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+
+      .category-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      }
+
+      .category-btn:hover img {
+        transform: scale(1.1);
+      }
+
+      .category-btn i {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      }
+
+      /* Forgot Password Modal Styles */
+      #forgotPasswordModal .bg-gradient-to-r {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      #forgotPasswordModal input:focus {
+        outline: none;
+        ring: 2px;
+        ring-color: #667eea;
+      }
+
+      /* Bottom Navigation Styles */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        z-index: 100;
+        padding: 8px 0;
+      }
+
+      .bottom-nav-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+      }
+
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        flex: 1;
+        max-width: 14.28%; /* 7 items */
+      }
+
+      .nav-item.active {
+        color: #3182ce;
+      }
+
+      .nav-item i {
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+
+      .nav-item span {
+        font-size: 10px;
+        font-weight: 500;
+      }
+
+      /* Adjust main content padding for bottom nav */
+      main {
+        padding-bottom: 70px;
+      }
+
+      /* Balance History Styles */
+      .transaction-item {
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(226, 232, 240, 1);
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+      }
+
+      .status-pill {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      
+      /* Sold Out Badge */
+      .sold-out-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #ef4444;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 9999px;
+        z-index: 10;
+      }
+    </style>
+</head>
+<body class="bg-white text-gray-900 min-h-screen flex flex-col">
+
+<!-- Notification -->
+<div id="notification" class="hidden fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-lg transform transition-transform duration-300 translate-x-full">
+  <div class="flex items-center">
+    <i class="fas fa-info-circle mr-2"></i>
+    <span id="notificationMessage"></span>
+  </div>
+</div>
+
+<!-- Auth modal -->
+<div id="authModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-md">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">SALMAN Top Up Zone</h1>
+      <p class="text-gray-600">Sign in to purchase Free Fire diamonds</p>
+    </div>
+
+    <form id="loginForm" class="hidden" onsubmit="handleLogin(event)">
+      <div class="mb-4">
+        <label class="block text-gray-700 mb-2">Email</label>
+        <input id="loginEmail" type="email" class="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3" placeholder="Enter your email">
+      </div>
+      <div class="mb-6">
+        <label class="block text-gray-700 mb-2">Password</label>
+        <input id="loginPassword" type="password" class="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3" placeholder="Enter your password">
+      </div>
+      <div id="loginError" class="text-red-500 mb-4 text-sm"></div>
+      
+      <div class="mb-6">
+        <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 rounded-lg">Log In</button>
+      </div>
+      
+      <!-- Forgot Password Button -->
+      <div class="text-center mt-4">
+        <button type="button" onclick="openForgotPassword()" class="text-blue-500 hover:text-blue-700 text-sm">
+          Forgot Password?
+        </button>
+      </div>
+    </form>
+
+    <form id="signupForm" class="hidden" onsubmit="handleSignUp(event)">
+      <div class="mb-4">
+        <label class="block text-gray-700 mb-2">Email</label>
+        <input id="signupEmail" type="email" class="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3" placeholder="Enter your email">
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-700 mb-2">Password</label>
+        <input id="signupPassword" type="password" class="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3" placeholder="Create a password">
+      </div>
+      <div class="mb-6">
+        <label class="block text-gray-700 mb-2">Confirm Password</label>
+        <input id="signupConfirmPassword" type="password" class="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3" placeholder="Confirm password">
+      </div>
+      <div id="signupError" class="text-red-500 mb-4 text-sm"></div>
+      <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg">Sign Up</button>
+    </form>
+
+    <div class="mt-6 text-center text-gray-600" id="authToggleText"></div>
+  </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-md">
+    <h3 class="text-2xl font-bold text-gray-900 mb-4">Reset Password</h3>
+    <p class="text-gray-700 mb-4">Enter your email address and we'll send you a link to reset your password.</p>
+    
+    <div class="mb-4">
+      <label class="block text-gray-700 mb-2">Email Address</label>
+      <input id="forgotPasswordEmail" type="email" class="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3" placeholder="Enter your email" required>
+    </div>
+    
+    <div id="forgotPasswordError" class="text-red-500 mb-4 text-sm"></div>
+    <div id="forgotPasswordSuccess" class="text-green-500 mb-4 text-sm hidden"></div>
+    
+    <div class="flex space-x-4 mt-6">
+      <button onclick="closeModal('forgotPasswordModal')" class="flex-1 bg-gray-300 py-3 rounded-lg">Cancel</button>
+      <button onclick="sendPasswordResetEmail()" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-lg">Send Reset Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main app -->
+<div id="mainApp" class="flex-1 flex-col">
+  <!-- Header with Balance -->
+  <header class="bg-white py-4 px-6 shadow-sm">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">SALMAN Top Up Zone</h1>
+      <div class="bg-gray-100 px-4 py-2 rounded-lg hidden" id="balanceContainer">
+        <span class="text-gray-700">Balance: ৳</span>
+        <span id="userBalance" class="font-bold text-blue-600">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats Section (Visible only when logged in) -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 py-4 px-6 hidden" id="statsSection">
+    <div class="container mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="text-center">
+        <p class="text-gray-600 text-sm">Available Balance</p>
+        <p class="text-gray-900 font-bold text-xl">৳<span id="profileBalance">0</span></p>
+      </div>
+      <div class="text-center">
+        <p class="text-gray-600 text-sm">Total Spent</p>
+        <p class="text-gray-900 font-bold text-xl">৳<span id="totalSpent">0</span></p>
+      </div>
+      <div class="text-center">
+        <p class="text-gray-600 text-sm">Weekly Spent</p>
+        <p class="text-gray-900 font-bold text-xl">৳<span id="weeklySpent">0</span></p>
+      </div>
+      <div class="text-center">
+        <p class="text-gray-600 text-sm">Total Orders</p>
+        <p class="text-gray-900 font-bold text-xl"><span id="totalOrders">0</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Sections -->
+  <main class="flex-1 container mx-auto py-6 px-4">
+    <!-- Home Section -->
+    <section id="home" class="page-section">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Free Fire Diamond Packages</h2>
+        <p class="text-gray-600 max-w-2xl mx-auto">Get the best deals. Instant delivery after admin approval.</p>
+      </div>
+      
+      <!-- Category Navigation Buttons with Images (Loaded from Firebase) -->
+      <!-- CATEGORY NAME HIDDEN - শুধু ছবি দেখাবে -->
+      <div id="categoriesContainer" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 max-w-4xl mx-auto">
+        <!-- Categories will be loaded here dynamically -->
+        <div class="text-center text-gray-600 py-12">
+          <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+          <p>Loading categories...</p>
+        </div>
+      </div>
+
+      <!-- Products Container - Initially Hidden -->
+      <div id="productsContainer" class="hidden">
+        <!-- Category Title -->
+        <div id="categoryTitle" class="text-center mb-6">
+          <h3 id="selectedCategoryName" class="text-2xl font-bold text-gray-900"></h3>
+          <button onclick="showAllCategories()" class="mt-2 text-blue-500 hover:text-blue-700 text-sm">
+            <i class="fas fa-arrow-left mr-1"></i> Back to All Categories
+          </button>
+        </div>
+        
+        <!-- Products Grid -->
+        <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <!-- Products will be loaded here when category is selected -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Orders Section -->
+    <section id="liveOrders" class="page-section hidden">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-3xl font-bold text-gray-900">Live Orders</h2>
+        <div class="text-sm text-gray-600">Showing latest <span id="liveOrdersCountLabel">—</span> (max 20)</div>
+      </div>
+      <div id="liveOrdersContainer" class="space-y-3">
+        <!-- Live orders (max 20) populated by JS -->
+        <div class="text-gray-600">লোড হচ্ছে...</div>
+      </div>
+      <div class="mt-4">
+        <button onclick="showSection('home')" class="bg-gray-200 px-4 py-2 rounded-lg">Back to Home</button>
+      </div>
+    </section>
+
+    <!-- Add Money Section -->
+    <section id="addMoney" class="page-section hidden">
+      <div class="max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">Add Money</h2>
+        
+        <!-- Payment Numbers with Copy Functionality -->
+        <div class="bg-gray-50 rounded-xl p-6 mb-8">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">Payment Instructions</h3>
+          <p class="text-gray-700 mb-4">Send money to one of the following numbers:</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-lg flex justify-between items-center">
+              <div>
+                <p class="text-lg font-semibold">bKash</p>
+                <p class="text-gray-700" id="bkashNumber">01601856499</p>
+              </div>
+              <button onclick="copyNumber('bkashNumber')" class="copy-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <div class="bg-white p-4 rounded-lg flex justify-between items-center">
+              <div>
+                <p class="text-lg font-semibold">Nagad</p>
+                <p class="text-gray-700" id="nagadNumber">01601856499</p>
+              </div>
+              <button onclick="copyNumber('nagadNumber')" class="copy-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <div class="bg-white p-4 rounded-lg flex justify-between items-center">
+              <div>
+                <p class="text-lg font-semibold">Rocket</p>
+                <p class="text-gray-700" id="rocketNumber">Coming Soon</p>
+              </div>
+              <button onclick="copyNumber('rocketNumber')" class="copy-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <div class="bg-white p-4 rounded-lg flex justify-between items-center">
+              <div>
+                <p class="text-lg font-semibold">Upay</p>
+                <p class="text-gray-700" id="upayNumber">Coming Soon</p>
+              </div>
+              <button onclick="copyNumber('upayNumber')" class="copy-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Form -->
+        <form id="addMoneyForm" onsubmit="submitTransaction(event)" class="bg-gray-50 rounded-xl p-6">
+          <div class="mb-6">
+            <label class="block text-gray-700 mb-2">Payment Method</label>
+            <select id="paymentMethod" class="w-full bg-white text-gray-900 rounded-lg px-4 py-3" required>
+              <option value="">Select Payment Method</option>
+              <option value="bkash">bKash</option>
+              <option value="nagad">Nagad</option>
+              <option value="rocket">Rocket</option>
+              <option value="upay">Upay</option>
+            </select>
+          </div>
+          <div class="mb-6">
+            <label class="block text-gray-700 mb-2">Amount (৳)</label>
+            <input id="amount" type="number" min="10" class="w-full bg-white text-gray-900 rounded-lg px-4 py-3" placeholder="Enter amount" required>
+          </div>
+          <div class="mb-6">
+            <label class="block text-gray-700 mb-2">Transaction ID</label>
+            <input id="transactionId" type="text" class="w-full bg-white text-gray-900 rounded-lg px-4 py-3" placeholder="Transaction ID" required>
+          </div>
+          <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg">Submit Transaction</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Balance History Section -->
+    <section id="balanceHistory" class="page-section hidden">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Balance History</h2>
+        <div id="balanceHistoryContainer" class="space-y-3">
+          <!-- Balance history items will be loaded here -->
+          <div class="text-gray-600">Loading balance history...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- My Orders Section -->
+    <section id="myOrders" class="page-section hidden">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">My Orders</h2>
+        <div id="ordersContainer"></div>
+      </div>
+    </section>
+
+    <!-- Supporter Section -->
+    <section id="supporterZone" class="page-section hidden">
+      <div class="max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Supporter Zone</h2>
+        <p class="text-gray-600 text-center mb-8">Connect with us</p>
+
+        <!-- Social Media Links -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <a href="https://t.me/imanerdigontobot" target="_blank" class="flex items-center justify-center gap-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 px-6 rounded-xl text-center">
+            <i class="fab fa-telegram-plane"></i> Imaner Digonto
+          </a>
+          <a href="https://t.me/salmantopupzonebot" target="_blank" class="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-4 px-6 rounded-xl text-center">
+            <i class="fab fa-telegram"></i> Telegram Mini App
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=61582536510638" target="_blank" class="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-700 to-blue-800 text-white py-4 px-6 rounded-xl text-center">
+            <i class="fab fa-facebook"></i> Facebook
+          </a>
+          <a href="https://wa.me/8801601856499" target="_blank" class="flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 px-6 rounded-xl text-center">
+            <i class="fas fa-question-circle"></i> Help
+          </a>
+          <!-- Android App Button -->
+          <a href="https://salman959.github.io/SALMAN-TOP-UP-ZONE/" target="_blank" class="flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 px-6 rounded-xl text-center">
+            <i class="fab fa-android"></i> Android App
+          </a>
+        </div>
+
+        <p class="text-gray-600 text-center mt-4">Thank you for connecting with us</p>
+      </div>
+    </section>
+
+    <!-- Profile Section - SHOW "LOGIN PLEASE" WHEN NOT LOGGED IN -->
+    <section id="profile" class="page-section hidden">
+      <div class="max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Your Profile</h2>
+        
+        <div id="profileNotLoggedIn" class="text-center py-12">
+          <div class="bg-gray-50 rounded-xl p-8 mb-6">
+            <i class="fas fa-user-lock text-5xl text-gray-400 mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-700 mb-2">Login Please</h3>
+            <p class="text-gray-600 mb-6">Please login to view your profile information</p>
+            <button onclick="showAuthModal(true)" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold py-3 px-8 rounded-lg">
+              <i class="fas fa-sign-in-alt mr-2"></i> Login Now
+            </button>
+          </div>
+        </div>
+        
+        <div id="profileLoggedIn" class="hidden">
+          <div class="bg-gray-50 rounded-xl p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Account Information</h3>
+            <div class="mb-4">
+              <p class="text-gray-600">Name</p>
+              <div class="flex items-center">
+                <p id="userName" class="text-gray-900 font-semibold mr-2">Loading...</p>
+                <button onclick="openNameEditor()" class="text-blue-500 hover:text-blue-700 text-sm">
+                  <i class="fas fa-edit"></i> Change
+                </button>
+              </div>
+            </div>
+            <div class="mb-4">
+              <p class="text-gray-600">Email</p>
+              <p id="profileEmail" class="text-gray-900 font-semibold">Loading...</p>
+            </div>
+            <div class="mb-4">
+              <p class="text-gray-600">User ID</p>
+              <div class="flex items-center">
+                <p id="userIdDisplay" class="text-gray-900 font-mono text-sm mr-2">Loading...</p>
+                <button onclick="copyUserId()" class="text-blue-500 hover:text-blue-700 text-sm">
+                  <i class="fas fa-copy"></i> Copy
+                </button>
+              </div>
+            </div>
+            <div class="mb-4">
+              <p class="text-gray-600">Current Balance</p>
+              <p class="text-blue-600 font-bold text-xl">৳<span id="profileBalance2">0</span></p>
+            </div>
+            <div class="flex items-center text-green-500">
+              <i class="fas fa-check-circle mr-2"></i><span>Account Verified!</span>
+            </div>
+          </div>
+          <button onclick="logout()" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-lg">Log Out</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <div class="bottom-nav-container">
+      <div class="nav-item active" onclick="showSection('home')">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="showSection('addMoney')">
+        <i class="fas fa-wallet"></i>
+        <span>Add Money</span>
+      </div>
+      <div class="nav-item" onclick="showSection('balanceHistory')">
+        <i class="fas fa-history"></i>
+        <span>Balance History</span>
+      </div>
+      <div class="nav-item" onclick="showSection('myOrders')">
+        <i class="fas fa-shopping-bag"></i>
+        <span>My Orders</span>
+      </div>
+      <div class="nav-item" onclick="showSection('liveOrders')">
+        <i class="fas fa-bolt"></i>
+        <span>Live Order</span>
+      </div>
+      <div class="nav-item" onclick="showSection('supporterZone')">
+        <i class="fas fa-users"></i>
+        <span>Supporter</span>
+      </div>
+      <div class="nav-item" onclick="showSection('profile')">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-gray-100 py-6 border-t border-gray-200 mt-8">
+    <div class="container mx-auto text-center">
+      <p class="text-gray-600">© 2025, Made With Developer By SALMAN BD</p>
+    </div>
+  </footer>
+</div>
+
+<!-- Buy Modal -->
+<div id="buyProductModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-md">
+    <h3 class="text-2xl font-bold text-gray-900 mb-4">Confirm Purchase</h3>
+    <div class="mb-4">
+      <p class="text-gray-600">Product</p>
+      <p id="modalProductName" class="text-gray-900 font-semibold text-lg"></p>
+    </div>
+    <div class="mb-4">
+      <p class="text-gray-600">Price</p>
+      <p id="modalProductPrice" class="text-blue-600 font-bold text-xl"></p>
+    </div>
+    <div class="mb-4">
+      <label class="block text-gray-700 mb-2">Game UID (অবশ্যই)</label>
+      <input id="gameUid" class="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3" placeholder="Enter your Game UID">
+      <p id="gameUidError" class="text-red-500 text-sm mt-1 hidden"></p>
+    </div>
+    <input type="hidden" id="modalProductId">
+    <input type="hidden" id="modalProductDiamonds">
+    <div class="flex space-x-4 mt-6">
+      <button onclick="closeModal('buyProductModal')" class="flex-1 bg-gray-300 py-3 rounded-lg">Cancel</button>
+      <button onclick="confirmPurchase()" class="flex-1 bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg">Confirm Purchase</button>
+    </div>
+  </div>
+</div>
+
+<!-- Name Editor Modal -->
+<div id="nameEditorModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-md">
+    <h3 class="text-2xl font-bold text-gray-900 mb-4">Change Name</h3>
+    <div class="mb-4">
+      <label class="block text-gray-700 mb-2">Your Name</label>
+      <input id="nameInput" type="text" class="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3" placeholder="Enter your name">
+    </div>
+    <div class="flex space-x-4 mt-6">
+      <button onclick="closeModal('nameEditorModal')" class="flex-1 bg-gray-300 py-3 rounded-lg">Cancel</button>
+      <button onclick="saveName()" class="flex-1 bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Insufficient Balance Modal -->
+<div id="insufficientBalanceModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-md text-center">
+    <h3 class="text-2xl font-bold text-gray-900 mb-2">Insufficient Balance</h3>
+    <p class="text-gray-700 mb-4">Your balance is not enough. Please add money.</p>
+    <div class="flex space-x-4">
+      <button onclick="closeModal('insufficientBalanceModal')" class="flex-1 bg-gray-300 py-3 rounded-lg">Cancel</button>
+      <button onclick="closeModal('insufficientBalanceModal'); showSection('addMoney')" class="flex-1 bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg">Add Money</button>
+    </div>
+  </div>
+</div>
+
+<!-- Purchase Success Modal -->
+<div id="purchaseSuccessModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-md text-center">
+    <h3 class="text-2xl font-bold text-gray-900 mb-2">Purchase Successful!</h3>
+    <p class="text-gray-700 mb-4">Order placed and pending admin approval.</p>
+    <button onclick="closeModal('purchaseSuccessModal'); showSection('myOrders')" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg">View Orders</button>
+  </div>
+</div>
+
+<!-- Sold Out Modal -->
+<div id="soldOutModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-md text-center">
+    <h3 class="text-2xl font-bold text-gray-900 mb-2">Product Sold Out</h3>
+    <p class="text-gray-700 mb-4">This product is no longer available. Please check other products.</p>
+    <button onclick="closeModal('soldOutModal')" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-lg">Close</button>
+  </div>
+</div>
+
+<script type="module">
+  // Firebase v11 modules import
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut,
+    sendPasswordResetEmail
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, onSnapshot, getDocs, serverTimestamp, orderBy, limit, updateDoc, increment } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-SamIwmjuV4YIdeFqtHDFhjUsTTJwvvs",
+    authDomain: "salman-top-up-zone.firebaseapp.com",
+    databaseURL: "https://salman-top-up-zone-default-rtdb.firebaseio.com",
+    projectId: "salman-top-up-zone",
+    storageBucket: "salman-top-up-zone.firebasestorage.app",
+    messagingSenderId: "392863074765",
+    appId: "1:392863074765:web:592c55c3f8da9a2d7b5c84",
+    measurementId: "G-Q2YH1L9JCT"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window.firestoreDb = db;
+  window.firebaseAuth = auth;
+
+  // Global variables
+  let categoriesUnsubscribe = null;
+  let productsUnsubscribe = null;
+
+  // Utility: show notifications
+  window.showNotification = function(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    const notificationMessage = document.getElementById('notificationMessage');
+    notificationMessage.textContent = message;
+    notification.className = 'fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-lg transform transition-transform duration-300';
+    if (type === 'success') notification.classList.add('bg-green-500','text-white');
+    else if (type === 'error') notification.classList.add('bg-red-500','text-white');
+    else notification.classList.add('bg-blue-500','text-white');
+    notification.classList.remove('hidden','translate-x-full');
+    setTimeout(()=>{ notification.classList.add('translate-x-full'); setTimeout(()=>notification.classList.add('hidden'),300); },4500);
+  };
+
+  // Copy Number Functionality for Add Money Page
+  window.copyNumber = function(numberId) {
+    const numberElement = document.getElementById(numberId);
+    const number = numberElement.textContent;
+    const copyButton = event.currentTarget;
+    
+    navigator.clipboard.writeText(number).then(() => {
+      copyButton.innerHTML = '<i class="fas fa-check"></i>';
+      copyButton.classList.add('copied');
+      showNotification('Number copied to clipboard!', 'success');
+      setTimeout(() => {
+        copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+        copyButton.classList.remove('copied');
+      }, 2000);
+    }).catch(() => {
+      showNotification('Failed to copy number', 'error');
+    });
+  };
+
+  // Show/hide auth modal
+  window.showAuthModal = function(fromProfile = false){ 
+    document.getElementById('authModal').classList.remove('hidden'); 
+    document.getElementById('loginError').textContent=''; 
+    document.getElementById('signupError').textContent=''; 
+    
+    // Always show login form by default
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('signupForm').classList.add('hidden');
+    document.getElementById('authToggleText').innerHTML = `Don't have an account? <span class="text-blue-500 cursor-pointer font-medium" onclick="toggleAuthForms()">Sign Up</span>`;
+  };
+  
+  function hideAuthModal(){ 
+    document.getElementById('authModal').classList.add('hidden'); 
+  }
+
+  // Auth handlers
+  window.handleSignUp = async function(e){
+    e.preventDefault();
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('signupConfirmPassword').value;
+    const err = document.getElementById('signupError');
+    err.textContent = '';
+    if(!email||!password||!confirmPassword){ err.textContent='Please fill all fields'; return; }
+    if(password !== confirmPassword){ err.textContent='Passwords do not match'; return; }
+    if(password.length < 6){ err.textContent='Password must be >= 6 chars'; return; }
+    try{
+      await createUserWithEmailAndPassword(auth, email, password);
+      showNotification('Account created!','success');
+    }catch(error){
+      console.error('Sign up error', error);
+      if(error.code === 'auth/email-already-in-use') err.textContent='Email already in use';
+      else if(error.code === 'auth/invalid-email') err.textContent='Invalid email';
+      else err.textContent='Sign up failed';
+      showNotification('Sign up failed','error');
+    }
+  };
+
+  window.handleLogin = async function(e){
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const err = document.getElementById('loginError');
+    err.textContent = '';
+    if(!email||!password){ err.textContent='Please fill all fields'; return; }
+    try{
+      await signInWithEmailAndPassword(auth, email, password);
+      showNotification('Logged in','success');
+    }catch(error){
+      console.error('Login error', error);
+      err.textContent = 'Wrong email or password.';
+      showNotification('Login failed','error');
+    }
+  };
+
+  // Forgot Password Functions
+  window.openForgotPassword = function() {
+    document.getElementById('forgotPasswordEmail').value = '';
+    document.getElementById('forgotPasswordError').textContent = '';
+    document.getElementById('forgotPasswordSuccess').classList.add('hidden');
+    document.getElementById('forgotPasswordModal').classList.remove('hidden');
+  };
+
+  window.sendPasswordResetEmail = async function() {
+    const email = document.getElementById('forgotPasswordEmail').value.trim();
+    const errorEl = document.getElementById('forgotPasswordError');
+    const successEl = document.getElementById('forgotPasswordSuccess');
+    
+    errorEl.textContent = '';
+    successEl.classList.add('hidden');
+    
+    if (!email) {
+      errorEl.textContent = 'Please enter your email address';
+      return;
+    }
+    
+    try {
+      await sendPasswordResetEmail(auth, email);
+      successEl.textContent = 'Password reset link has been sent to your email!';
+      successEl.classList.remove('hidden');
+      setTimeout(() => {
+        closeModal('forgotPasswordModal');
+      }, 5000);
+    } catch (error) {
+      console.error('Password reset error:', error);
+      if (error.code === 'auth/user-not-found') {
+        errorEl.textContent = 'No account found with this email address';
+      } else if (error.code === 'auth/invalid-email') {
+        errorEl.textContent = 'Invalid email address';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorEl.textContent = 'Too many attempts. Please try again later.';
+      } else {
+        errorEl.textContent = 'Failed to send reset email. Please try again.';
+      }
+    }
+  };
+
+  window.logout = function(){ 
+    signOut(auth).then(()=>{ 
+      showNotification('Logged out','success'); 
+      // Reset UI for logged out state
+      document.getElementById('balanceContainer').classList.add('hidden');
+      document.getElementById('statsSection').classList.add('hidden');
+      document.getElementById('userBalance').textContent = '0';
+      showSection('home');
+      // cleanup listeners
+      try{ if(ordersUnsubscribe) ordersUnsubscribe(); }catch(e){}
+      try{ if(liveOrdersUnsubscribe) liveOrdersUnsubscribe(); }catch(e){}
+      try{ if(balanceHistoryUnsubscribe) balanceHistoryUnsubscribe(); }catch(e){}
+      try{ if(categoriesUnsubscribe) categoriesUnsubscribe(); }catch(e){}
+      try{ if(productsUnsubscribe) productsUnsubscribe(); }catch(e){}
+    }); 
+  };
+
+  // User ID Management
+  function generateUserId() {
+    if (window.Telegram && Telegram.WebApp) {
+      const tgUser = Telegram.WebApp.initDataUnsafe.user;
+      if (tgUser && tgUser.id) {
+        return `tg_${tgUser.id}`;
+      }
+    }
+    
+    let storedId = localStorage.getItem('salman_user_id');
+    if (storedId) {
+      return storedId;
+    }
+    
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 10);
+    const newId = `user_${timestamp}_${randomStr}`;
+    localStorage.setItem('salman_user_id', newId);
+    return newId;
+  }
+
+  function getUserName() {
+    if (window.Telegram && Telegram.WebApp) {
+      const tgUser = Telegram.WebApp.initDataUnsafe.user;
+      if (tgUser) {
+        const firstName = tgUser.first_name || '';
+        const lastName = tgUser.last_name || '';
+        return `${firstName} ${lastName}`.trim();
+      }
+    }
+    
+    const storedName = localStorage.getItem('salman_user_name');
+    if (storedName) {
+      return storedName;
+    }
+    
+    return 'User';
+  }
+
+  // Name Editor Functions
+  window.openNameEditor = function() {
+    const currentName = document.getElementById('userName').textContent;
+    document.getElementById('nameInput').value = currentName;
+    document.getElementById('nameEditorModal').classList.remove('hidden');
+  };
+
+  window.saveName = async function() {
+    const newName = document.getElementById('nameInput').value.trim();
+    if (!newName) {
+      showNotification('Please enter a name', 'error');
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      showNotification('Please log in first', 'error');
+      return;
+    }
+
+    try {
+      localStorage.setItem('salman_user_name', newName);
+      const userProfileRef = doc(db, 'users', user.uid, 'profile', 'main');
+      await setDoc(userProfileRef, {
+        displayName: newName
+      }, { merge: true });
+
+      document.getElementById('userName').textContent = newName;
+      closeModal('nameEditorModal');
+      showNotification('Name updated successfully', 'success');
+    } catch (error) {
+      console.error('Error updating name:', error);
+      showNotification('Failed to update name', 'error');
+    }
+  };
+
+  // Copy User ID Function
+  window.copyUserId = function() {
+    const userId = document.getElementById('userIdDisplay').textContent;
+    navigator.clipboard.writeText(userId).then(() => {
+      showNotification('User ID copied to clipboard', 'success');
+    }).catch(() => {
+      showNotification('Failed to copy User ID', 'error');
+    });
+  };
+
+  // On auth state change
+  onAuthStateChanged(auth, async (user) => {
+    if(user){
+      const userId = generateUserId();
+      const userName = getUserName();
+      
+      try{
+        const userProfileRef = doc(db,'users',user.uid,'profile','main');
+        const snap = await getDoc(userProfileRef);
+        if(!snap.exists()){
+          await setDoc(userProfileRef, {
+            email: user.email || 'anonymous',
+            balance: 0,
+            totalSpent: 0,
+            weeklySpent: 0,
+            totalOrders: 0,
+            createdAt: serverTimestamp(),
+            phone: '',
+            displayName: userName,
+            userId: userId
+          });
+        } else {
+          const existingData = snap.data();
+          if (!existingData.userId) {
+            await setDoc(userProfileRef, {
+              userId: userId,
+              displayName: userName
+            }, { merge: true });
+          }
+        }
+      }catch(e){ console.error('Error creating profile', e); }
+      initializeAppForUser(user, userId, userName);
+    } else {
+      // User is not logged in - show home page without auth modal
+      document.getElementById('balanceContainer').classList.add('hidden');
+      document.getElementById('statsSection').classList.add('hidden');
+      showSection('home');
+      loadCategories(); // Load categories for non-logged in users
+    }
+  });
+
+  async function initializeAppForUser(user, userId, userName){
+    hideAuthModal();
+    // Show balance and stats for logged in users
+    document.getElementById('balanceContainer').classList.remove('hidden');
+    document.getElementById('statsSection').classList.remove('hidden');
+    
+    // Show logged in profile section
+    document.getElementById('profileNotLoggedIn').classList.add('hidden');
+    document.getElementById('profileLoggedIn').classList.remove('hidden');
+    
+    document.getElementById('profileEmail').textContent = user.email || 'anonymous';
+    document.getElementById('userName').textContent = userName;
+    document.getElementById('userIdDisplay').textContent = userId;
+    
+    setupBalanceListener(user.uid);
+    loadCategories(); // Load categories for logged in users
+    showSection('home');
+  }
+
+  function setupBalanceListener(userId){
+    const userProfileRef = doc(db,'users',userId,'profile','main');
+    onSnapshot(userProfileRef, (docSnap)=>{
+      if(docSnap.exists()){
+        const data = docSnap.data();
+        document.getElementById('userBalance').textContent = data.balance || 0;
+        document.getElementById('profileBalance').textContent = data.balance || 0;
+        document.getElementById('profileBalance2').textContent = data.balance || 0;
+        document.getElementById('totalSpent').textContent = data.totalSpent || 0;
+        document.getElementById('weeklySpent').textContent = data.weeklySpent || 0;
+        document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+        
+        if (data.displayName && data.displayName !== document.getElementById('userName').textContent) {
+          document.getElementById('userName').textContent = data.displayName;
+          localStorage.setItem('salman_user_name', data.displayName);
+        }
+      }
+    }, (err)=>{ console.error('Balance listener error', err); });
+  }
+
+  // Load Categories from Firebase - SHOW ONLY IMAGES, NO NAMES
+  function loadCategories() {
+    try {
+      if (categoriesUnsubscribe) categoriesUnsubscribe();
+      
+      const categoriesRef = collection(db, 'categories');
+      categoriesUnsubscribe = onSnapshot(categoriesRef, (querySnapshot) => {
+        const categoriesContainer = document.getElementById('categoriesContainer');
+        categoriesContainer.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+          categoriesContainer.innerHTML = `
+            <div class="text-center text-gray-600 py-12">
+              <i class="fas fa-box-open text-3xl mb-4"></i>
+              <p>No categories available yet.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        querySnapshot.forEach((docSnap) => {
+          const category = docSnap.data();
+          const categoryId = docSnap.id;
+          
+          const button = document.createElement('button');
+          button.className = 'category-btn p-0 rounded-xl overflow-hidden';
+          button.onclick = () => showCategory(categoryId, category.name);
+          
+          const imgSrc = category.imageUrl || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Category';
+          
+          // SHOW ONLY IMAGE, NO NAME - CATEGORY NAME HIDDEN
+          button.innerHTML = `
+            <img src="${imgSrc}" alt="${category.name}" class="w-full h-32 object-cover">
+            <!-- NO NAME DISPLAYED - Only image visible -->
+          `;
+          
+          categoriesContainer.appendChild(button);
+        });
+      }, (error) => {
+        console.error('Error loading categories:', error);
+      });
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
+  }
+
+  // Show products by category
+  window.showCategory = function(categoryId, categoryName) {
+    // Remove active state from all buttons
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.classList.remove('border-2', 'border-blue-500', 'ring-2', 'ring-blue-500');
+    });
+    
+    // Add active state to clicked button
+    event.currentTarget.classList.add('border-2', 'border-blue-500', 'ring-2', 'ring-blue-500');
+
+    // Show products container and category title
+    document.getElementById('productsContainer').classList.remove('hidden');
+    document.getElementById('selectedCategoryName').textContent = categoryName;
+    
+    // Hide categories container
+    document.getElementById('categoriesContainer').classList.add('hidden');
+    
+    // Load products for this category
+    loadProductsByCategory(categoryId);
+    
+    // Scroll to products section
+    document.getElementById('productsContainer').scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    });
+  };
+
+  // Load products by category from Firebase
+  function loadProductsByCategory(categoryId) {
+    try {
+      if (productsUnsubscribe) productsUnsubscribe();
+      
+      const productsRef = collection(db, 'products');
+      const q = query(productsRef, where('categoryId', '==', categoryId));
+      productsUnsubscribe = onSnapshot(q, (querySnapshot) => {
+        const productsGrid = document.getElementById('productsGrid');
+        productsGrid.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+          productsGrid.innerHTML = `
+            <div class="col-span-full text-center text-gray-600 py-12">
+              <i class="fas fa-box-open text-3xl mb-4"></i>
+              <p>No products available in this category yet.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        querySnapshot.forEach((docSnap) => {
+          const product = docSnap.data();
+          const productId = docSnap.id;
+          
+          const isSoldOut = product.limitType === 'limited' && product.remainingStock <= 0;
+          
+          const card = document.createElement('div');
+          card.className = `relative bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 flex flex-col justify-between transition-all duration-300 hover:scale-105 hover:shadow-lg border ${isSoldOut ? 'border-gray-300 opacity-75' : 'border-gray-200'}`;
+          
+          let badge = '';
+          if (product.limitType === 'limited') {
+            badge = `<div class="absolute -top-2 -left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">LIMITED</div>`;
+          } else if (product.limitType === 'unlimited') {
+            badge = `<div class="absolute -top-2 -left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">UNLIMITED</div>`;
+          }
+          
+          // SHOW SOLD OUT BADGE ONLY FOR LIMITED PRODUCTS
+          if (isSoldOut) {
+            badge += `<div class="sold-out-badge">SOLD OUT</div>`;
+          }
+          
+          card.innerHTML = `
+            ${badge}
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 mb-1">${escapeHtml(product.name)}</h3>
+              ${product.diamonds > 0 ? `<p class="text-gray-600 text-sm mb-2">${product.diamonds} Diamonds</p>` : ''}
+              ${product.limitType === 'limited' && product.remainingStock > 0 ? `<p class="text-gray-600 text-xs mb-2">Remaining: ${product.remainingStock}</p>` : ''}
+            </div>
+            <div>
+              <p class="text-xl font-bold text-blue-600 mb-3">৳${product.price}</p>
+              <button onclick="openBuyModal('${productId}','${escapeHtml(product.name)}',${product.price},${product.diamonds||0})" 
+                class="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white font-semibold py-2 rounded-lg flex items-center justify-center ${isSoldOut ? 'opacity-50 cursor-not-allowed' : ''}"
+                ${isSoldOut ? 'disabled' : ''}>
+                <i class="fas fa-shopping-cart mr-2"></i> ${isSoldOut ? 'Sold Out' : 'Buy Now'}
+              </button>
+            </div>
+          `;
+          productsGrid.appendChild(card);
+        });
+      }, (error) => {
+        console.error('Error loading products:', error);
+      });
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    }
+  }
+
+  // Show all categories again
+  window.showAllCategories = function() {
+    document.getElementById('productsContainer').classList.add('hidden');
+    document.getElementById('categoriesContainer').classList.remove('hidden');
+    
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.classList.remove('border-2', 'border-blue-500', 'ring-2', 'ring-blue-500');
+    });
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Helper function to escape HTML
+  function escapeHtml(text){
+    if(text === null || text === undefined) return '';
+    return String(text).replace(/[&<>"'`=\/]/g, function(s){ return ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
+    })[s]; });
+  }
+
+  // UI helpers
+  window.showSection = function(sectionId){
+    document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+    const active = document.getElementById(sectionId);
+    if(active) active.classList.remove('hidden');
+
+    // Update bottom navigation active state
+    document.querySelectorAll('.nav-item').forEach(item => { 
+      item.classList.remove('active', 'text-blue-600');
+      item.classList.add('text-gray-500');
+    });
+    
+    const activeNavItem = Array.from(document.querySelectorAll('.nav-item')).find(item => {
+      return item.getAttribute('onclick') && item.getAttribute('onclick').includes(sectionId);
+    });
+    
+    if(activeNavItem) { 
+      activeNavItem.classList.add('active', 'text-blue-600');
+      activeNavItem.classList.remove('text-gray-500');
+    }
+
+    // Reload data when sections are shown
+    const user = auth.currentUser;
+    
+    // Handle profile section specially
+    if(sectionId === 'profile') {
+      if(!user) {
+        // Show "Login Please" when not logged in
+        document.getElementById('profileNotLoggedIn').classList.remove('hidden');
+        document.getElementById('profileLoggedIn').classList.add('hidden');
+      } else {
+        // Show profile info when logged in
+        document.getElementById('profileNotLoggedIn').classList.add('hidden');
+        document.getElementById('profileLoggedIn').classList.remove('hidden');
+      }
+    }
+    
+    if(sectionId === 'myOrders' && user){
+      loadUserOrders(user.uid);
+    }
+    if(sectionId === 'liveOrders'){
+      loadLiveOrders();
+    }
+    if(sectionId === 'balanceHistory' && user){
+      loadBalanceHistory(user.uid);
+    }
+    if(sectionId === 'home') {
+      // Make sure categories are visible when returning to home
+      document.getElementById('productsContainer').classList.add('hidden');
+      document.getElementById('categoriesContainer').classList.remove('hidden');
+    }
+  };
+
+  // Buying flow
+  window.openBuyModal = async function(productId, productName, productPrice, diamonds){
+    const user = auth.currentUser;
+    if(!user){ 
+      // Show auth modal when not logged in
+      showAuthModal();
+      return;
+    }
+    
+    // Check if product is still available (for limited products)
+    try {
+      const productRef = doc(db, 'products', productId);
+      const productDoc = await getDoc(productRef);
+      
+      if (productDoc.exists()) {
+        const product = productDoc.data();
+        
+        // Check if limited product is sold out
+        if (product.limitType === 'limited' && product.remainingStock <= 0) {
+          document.getElementById('soldOutModal').classList.remove('hidden');
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error checking product availability:', error);
+    }
+    
+    document.getElementById('modalProductName').textContent = productName;
+    document.getElementById('modalProductPrice').textContent = `৳${productPrice}`;
+    document.getElementById('modalProductId').value = productId;
+    document.getElementById('modalProductDiamonds').value = diamonds;
+    document.getElementById('gameUid').value = '';
+    document.getElementById('gameUidError').classList.add('hidden');
+    document.getElementById('buyProductModal').classList.remove('hidden');
+  };
+
+  window.closeModal = function(id){ document.getElementById(id).classList.add('hidden'); };
+
+  window.confirmPurchase = async function(){
+    const gameUid = document.getElementById('gameUid').value;
+    const errEl = document.getElementById('gameUidError');
+    if(!gameUid || !gameUid.trim()){ errEl.textContent='Please enter Game UID'; errEl.classList.remove('hidden'); return; }
+    errEl.classList.add('hidden');
+    const productId = document.getElementById('modalProductId').value;
+    const productName = document.getElementById('modalProductName').textContent;
+    const productPrice = parseFloat(document.getElementById('modalProductPrice').textContent.replace('৳','')) || 0;
+    const diamonds = parseInt(document.getElementById('modalProductDiamonds').value||'0',10) || 0;
+    closeModal('buyProductModal');
+    await processPurchase(productId, productName, productPrice, diamonds, gameUid);
+  };
+
+  window.processPurchase = async function(productId, productName, productPrice, diamonds, gameUid){
+    const user = auth.currentUser;
+    if(!user){ showAuthModal(); return; }
+    
+    // First check product availability again
+    try {
+      const productRef = doc(db, 'products', productId);
+      const productDoc = await getDoc(productRef);
+      
+      if (productDoc.exists()) {
+        const product = productDoc.data();
+        
+        // Check if limited product is sold out
+        if (product.limitType === 'limited' && product.remainingStock <= 0) {
+          document.getElementById('soldOutModal').classList.remove('hidden');
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error checking product availability:', error);
+    }
+    
+    const userProfileRef = doc(db,'users',user.uid,'profile','main');
+    let userDoc;
+    try{ userDoc = await getDoc(userProfileRef); }catch(e){ console.error('Error fetching profile',e); showNotification('Error fetching user data','error'); return; }
+    if(!userDoc || !userDoc.exists()){ showNotification('Profile not found','error'); return; }
+    const userData = userDoc.data() || {};
+    const currentBalance = Number(userData.balance || 0);
+    if(currentBalance < productPrice){ document.getElementById('insufficientBalanceModal').classList.remove('hidden'); return; }
+    const newBalance = currentBalance - productPrice;
+    try{
+      // Update user profile
+      await setDoc(userProfileRef, {
+        balance: newBalance,
+        totalSpent: (userData.totalSpent || 0) + productPrice,
+        weeklySpent: (userData.weeklySpent || 0) + productPrice,
+        totalOrders: (userData.totalOrders || 0) + 1
+      }, { merge: true });
+
+      // Update product stock if limited
+      const productRef = doc(db, 'products', productId);
+      const productDoc = await getDoc(productRef);
+      if (productDoc.exists()) {
+        const product = productDoc.data();
+        if (product.limitType === 'limited' && product.remainingStock > 0) {
+          await updateDoc(productRef, {
+            remainingStock: increment(-1)
+          });
+        }
+      }
+
+      // Create order
+      await addDoc(collection(db,'allOrders'), {
+        productId, productName, price: productPrice, diamonds, gameUid,
+        status: 'pending', timestamp: serverTimestamp(), userId: user.uid, userEmail: user.email || 'anonymous'
+      });
+
+      document.getElementById('purchaseSuccessModal').classList.remove('hidden');
+      showNotification('Order placed — pending admin approval','success');
+    }catch(error){
+      console.error('Error processing purchase', error);
+      showNotification('Purchase failed. Try again.','error');
+    }
+  };
+
+  // Submit transaction
+  window.submitTransaction = async function(e){
+    e.preventDefault();
+    const user = auth.currentUser;
+    if(!user){ showAuthModal(); return; }
+    const amount = Number(document.getElementById('amount').value || 0);
+    const transactionId = document.getElementById('transactionId').value;
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    if(!amount || !transactionId || !paymentMethod){ showNotification('Fill all fields','error'); return; }
+    if(amount < 10){ showNotification('Minimum ৳10','error'); return; }
+    try{
+      const userProfileRef = doc(db,'users',user.uid,'profile','main');
+      const userDoc = await getDoc(userProfileRef);
+      const currentBalance = userDoc.exists() ? (userDoc.data().balance || 0) : 0;
+      await addDoc(collection(db,'pendingTransactions'), {
+        userId: user.uid, userEmail: user.email || 'anonymous', amount, transactionId, paymentMethod,
+        status: 'pending', timestamp: serverTimestamp(), originalBalance: currentBalance
+      });
+      document.getElementById('transactionId').value = '';
+      document.getElementById('amount').value = '';
+      document.getElementById('paymentMethod').value = '';
+      showNotification('Transaction submitted','success');
+    }catch(e){ console.error('Submit transaction error', e); showNotification('Failed to submit transaction','error'); }
+  };
+
+  // --- ORDERS: My Orders ---
+  let ordersUnsubscribe = null;
+  function loadUserOrders(userId){
+    try{ if(ordersUnsubscribe) ordersUnsubscribe(); }catch(e){}
+    const ordersContainer = document.getElementById('ordersContainer');
+    ordersContainer.innerHTML = `<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-gray-400 mb-4"></i><p class="text-gray-600">Loading orders...</p></div>`;
+    const ordersRef = collection(db, 'allOrders');
+    const q = query(ordersRef, where('userId', '==', userId));
+    try {
+      ordersUnsubscribe = onSnapshot(q, (querySnapshot) => {
+        const validOrders = [];
+        querySnapshot.forEach((docSnap) => {
+          const o = docSnap.data();
+          if (!o) return;
+          if (o.userId !== userId) return;
+          if (o.isFake === true || o.fake === true) return;
+          if (typeof o.price !== 'number' || Number.isNaN(o.price) || o.price <= 0) return;
+          validOrders.push({ id: docSnap.id, ...o });
+        });
+        if (validOrders.length === 0) {
+          ordersContainer.innerHTML = `
+            <div class="text-center py-8">
+              <i class="fas fa-shopping-bag text-4xl text-gray-400 mb-4"></i>
+              <p class="text-gray-600">No orders found</p>
+              <button onclick="showSection('home')" class="mt-4 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-semibold py-2 px-6 rounded-lg">Order Now</button>
+            </div>
+          `;
+          return;
+        }
+        validOrders.sort((a,b)=>{
+          const aT = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() :
+                     a.timestamp && a.timestamp.seconds ? (a.timestamp.seconds * 1000) : 0;
+          const bT = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() :
+                     b.timestamp && b.timestamp.seconds ? (b.timestamp.seconds * 1000) : 0;
+          return bT - aT;
+        });
+        ordersContainer.innerHTML = '';
+        validOrders.forEach(ord => {
+          const orderDate = ord.timestamp && typeof ord.timestamp.toDate === 'function' ? ord.timestamp.toDate().toLocaleString() :
+                            ord.timestamp && ord.timestamp.seconds ? new Date(ord.timestamp.seconds*1000).toLocaleString() : 'N/A';
+          const status = ord.status || 'pending';
+          let statusColor='bg-yellow-500', statusText='Pending', statusIcon='fa-clock';
+          if(status==='completed'){ statusColor='bg-green-500'; statusText='Completed'; statusIcon='fa-check'; }
+          else if(status==='rejected'){ statusColor='bg-red-500'; statusText='Rejected'; statusIcon='fa-times'; }
+          else if(status==='cancelled'){ statusColor='bg-gray-500'; statusText='Cancelled'; statusIcon='fa-ban'; }
+
+          const orderName = ord.productName || 'Product';
+
+          const el = document.createElement('div');
+          el.className = 'bg-white rounded-lg p-4 mb-4 shadow-sm';
+          el.innerHTML = `
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-bold text-gray-900">${escapeHtml(orderName)}</h3>
+                <p class="text-gray-600 text-sm">Game UID: <span class="font-medium text-gray-700">${escapeHtml(ord.gameUid||'N/A')}</span></p>
+                <p class="text-gray-600 text-sm">Date: ${escapeHtml(orderDate)}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-blue-600 font-bold">৳${escapeHtml(Number(ord.price).toString())}</p>
+                <div class="flex items-center justify-end mt-1">
+                  <span class="${statusColor} text-white text-xs px-2 py-1 rounded-full flex items-center">
+                    <i class="fas ${statusIcon} mr-1"></i>${statusText}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-2 pt-2 border-t border-gray-200">
+              <p class="text-gray-600 text-sm">Order ID: ${escapeHtml(ord.id.substring(0,8))}...</p>
+              ${ord.adminNote ? `<p class="text-gray-600 text-sm mt-1">Admin Note: ${escapeHtml(ord.adminNote)}</p>` : ''}
+            </div>
+          `;
+          ordersContainer.appendChild(el);
+        });
+      }, (error) => {
+        console.error('Error loading orders (onSnapshot):', error);
+        ordersContainer.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-exclamation-triangle text-3xl text-yellow-500 mb-4"></i>
+            <p class="text-gray-700">Unable to load orders right now. Please try again later.</p>
+          </div>
+        `;
+      });
+    } catch(e){
+      console.error('Failed to attach orders listener', e);
+      ordersContainer.innerHTML = `<p class="text-red-500">Unable to load orders. Please try again later.</p>`;
+    }
+  }
+
+  // --- BALANCE HISTORY ---
+  let balanceHistoryUnsubscribe = null;
+  function loadBalanceHistory(userId){
+    try{ if(balanceHistoryUnsubscribe) balanceHistoryUnsubscribe(); }catch(e){}
+    const container = document.getElementById('balanceHistoryContainer');
+    container.innerHTML = `<div class="text-center py-6"><i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i><p class="text-gray-600">Loading balance history...</p></div>`;
+
+    const transactionsRef = collection(db, 'pendingTransactions');
+    const q = query(transactionsRef, where('userId', '==', userId));
+    try {
+      balanceHistoryUnsubscribe = onSnapshot(q, (querySnapshot) => {
+        const items = [];
+        querySnapshot.forEach((docSnap) => {
+          const t = docSnap.data();
+          if(!t) return;
+          if(t.userId !== userId) return;
+          items.push({ id: docSnap.id, ...t });
+        });
+
+        if(items.length === 0){
+          container.innerHTML = `<div class="text-gray-600 text-center py-8">No balance history found</div>`;
+          return;
+        }
+
+        items.sort((a,b)=>{
+          const aT = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() :
+                     a.timestamp && a.timestamp.seconds ? (a.timestamp.seconds * 1000) : 0;
+          const bT = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() :
+                     b.timestamp && b.timestamp.seconds ? (b.timestamp.seconds * 1000) : 0;
+          return bT - aT;
+        });
+
+        container.innerHTML = '';
+        items.forEach(item=>{
+          const status = item.status || 'pending';
+          let statusColor = 'bg-yellow-500', statusText = 'Pending', statusIcon = 'fa-clock';
+          if(status === 'approved'){ statusColor = 'bg-green-500'; statusText = 'Approved'; statusIcon='fa-check'; }
+          else if(status === 'rejected'){ statusColor = 'bg-red-500'; statusText = 'Rejected'; statusIcon='fa-times'; }
+
+          const transactionDate = item.timestamp && typeof item.timestamp.toDate === 'function' ? item.timestamp.toDate().toLocaleString() :
+                                item.timestamp && item.timestamp.seconds ? new Date(item.timestamp.seconds*1000).toLocaleString() : 'N/A';
+
+          const el = document.createElement('div');
+          el.className = 'transaction-item';
+          el.innerHTML = `
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="font-bold text-gray-900">৳${escapeHtml(Number(item.amount).toString())}</div>
+                <div class="text-gray-600 text-sm">Transaction ID: <span class="text-gray-700">${escapeHtml(item.transactionId||'N/A')}</span></div>
+                <div class="text-gray-600 text-sm">Method: <span class="text-gray-700">${escapeHtml(item.paymentMethod||'N/A')}</span></div>
+                <div class="text-gray-600 text-sm">Date: ${escapeHtml(transactionDate)}</div>
+              </div>
+              <div class="text-right">
+                <div class="status-pill ${statusColor}"><i class="fas ${statusIcon} mr-1"></i>${statusText}</div>
+              </div>
+            </div>
+          `;
+          container.appendChild(el);
+        });
+      }, (err) => {
+        console.error('Balance history listener error:', err);
+        container.innerHTML = `<div class="text-red-500">Failed to load balance history</div>`;
+      });
+    } catch(e){
+      console.error('Failed to attach balance history listener', e);
+      container.innerHTML = `<div class="text-red-500">Failed to load balance history</div>`;
+    }
+  }
+
+  // --- LIVE ORDERS ---
+  let liveOrdersUnsubscribe = null;
+  function loadLiveOrders(){
+    try{ if(liveOrdersUnsubscribe) liveOrdersUnsubscribe(); }catch(e){}
+    const container = document.getElementById('liveOrdersContainer');
+    const countLabel = document.getElementById('liveOrdersCountLabel');
+    container.innerHTML = `<div class="text-center py-6"><i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i><p class="text-gray-600">Loading live orders...</p></div>`;
+    countLabel.textContent = '—';
+
+    const ordersRef = collection(db, 'allOrders');
+    let qRef;
+    try {
+      qRef = query(ordersRef, orderBy('timestamp','desc'), limit(20));
+      liveOrdersUnsubscribe = onSnapshot(qRef, (querySnapshot) => {
+        const items = [];
+        querySnapshot.forEach((docSnap) => {
+          const o = docSnap.data();
+          if(!o) return;
+          if(o.isFake === true || o.fake === true) return;
+          if(typeof o.price !== 'number' || Number.isNaN(o.price) || o.price <= 0) return;
+          items.push({ id: docSnap.id, ...o });
+        });
+
+        if(items.length === 0){
+          container.innerHTML = `<div class="text-gray-600">কোনও লাইভ অর্ডার নেই</div>`;
+          countLabel.textContent = '0';
+          return;
+        }
+
+        container.innerHTML = '';
+        items.forEach(it=>{
+          const status = it.status || 'pending';
+          let pillClass = 'bg-yellow-500 text-white', pillText = 'Pending', icon = 'fa-clock';
+          if(status === 'completed'){ pillClass = 'bg-green-500 text-white'; pillText = 'Completed'; icon='fa-check'; }
+          else if(status === 'rejected'){ pillClass = 'bg-red-500 text-white'; pillText = 'Rejected'; icon='fa-times'; }
+          else if(status === 'cancelled'){ pillClass = 'bg-gray-500 text-white'; pillText = 'Cancelled'; icon='fa-ban'; }
+
+          const orderName = it.productName || 'Product';
+          const orderDate = it.timestamp && typeof it.timestamp.toDate === 'function' ? it.timestamp.toDate().toLocaleString() :
+                        it.timestamp && it.timestamp.seconds ? new Date(it.timestamp.seconds*1000).toLocaleString() : 'N/A';
+
+          const el = document.createElement('div');
+          el.className = 'live-order-item flex justify-between items-start';
+          el.innerHTML = `
+            <div>
+              <div class="font-bold text-gray-900">${escapeHtml(orderName)}</div>
+              <div class="text-gray-600 text-sm">Game UID: <span class="text-gray-700">${escapeHtml(it.gameUid||'N/A')}</span></div>
+              <div class="text-gray-600 text-sm">Date: ${escapeHtml(orderDate)}</div>
+              <div class="text-gray-600 text-sm">User: <span class="text-gray-700">${escapeHtml(it.userEmail || it.userId || 'N/A')}</span></div>
+            </div>
+            <div class="text-right">
+              <div class="text-blue-600 font-bold mb-1">৳${escapeHtml(Number(it.price).toString())}</div>
+              <div class="status-pill ${pillClass}"><i class="fas ${icon} mr-1"></i>${pillText}</div>
+            </div>
+          `;
+          container.appendChild(el);
+        });
+
+        countLabel.textContent = String(items.length);
+      }, (err) => {
+        console.error('Live orders listener error:', err);
+        container.innerHTML = `<div class="text-red-500">অর্ডার লোড করতে সমস্যা হয়েছে</div>`;
+        countLabel.textContent = '0';
+      });
+    } catch(e){
+      console.error('Failed to attach live orders listener', e);
+      container.innerHTML = `<div class="text-red-500">অর্ডার লোড করতে সমস্যা আছে</div>`;
+      countLabel.textContent = '0';
+    }
+  }
+
+  // Initialize app
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('signupForm').classList.add('hidden');
+    document.getElementById('authToggleText').innerHTML = `Don't have an account? <span class="text-blue-500 cursor-pointer font-medium" onclick="toggleAuthForms()">Sign Up</span>`;
+    
+    // Start by showing home page (not auth modal)
+    showSection('home');
+    loadCategories();
+    
+    // Check if user is already logged in
+    if(auth.currentUser) {
+      const userId = generateUserId();
+      const userName = getUserName();
+      initializeAppForUser(auth.currentUser, userId, userName);
+    }
+  });
+
+  window.toggleAuthForms = function(){
+    const loginForm = document.getElementById('loginForm'), signupForm = document.getElementById('signupForm');
+    if(loginForm.classList.contains('hidden')){ 
+      loginForm.classList.remove('hidden'); 
+      signupForm.classList.add('hidden'); 
+      document.getElementById('authToggleText').innerHTML = `Don't have an account? <span class="text-blue-500 cursor-pointer font-medium" onclick="toggleAuthForms()">Sign Up</span>`; 
+    } else { 
+      loginForm.classList.add('hidden'); 
+      signupForm.classList.remove('hidden'); 
+      document.getElementById('authToggleText').innerHTML = `Already have an account? <span class="text-blue-500 cursor-pointer font-medium" onclick="toggleAuthForms()">Log In</span>`; 
+    }
+    document.getElementById('loginError').textContent=''; 
+    document.getElementById('signupError').textContent='';
+  };
+
+</script>
+
+</body>
+</html>
